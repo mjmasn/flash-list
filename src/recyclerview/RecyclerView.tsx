@@ -171,6 +171,18 @@ const RecyclerViewComponent = <T,>(
         internalViewRef.current
       );
 
+      // Skip layout when scroll-direction dimension is zero.
+      // This happens when the list is rendered in a background tab/screen
+      // (e.g., non-active React Navigation stack screens). Without this guard,
+      // items get measured as zero-height, all stack at position 0, and the
+      // draw distance buffer causes ALL items to be rendered.
+      const scrollDimensionSize = horizontal
+        ? outerViewSize.width
+        : outerViewSize.height;
+      if (scrollDimensionSize <= 0) {
+        return;
+      }
+
       containerViewSizeRef.current = outerViewSize;
 
       // firstChildViewLayout is already relative to the outer container,
