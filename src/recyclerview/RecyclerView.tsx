@@ -180,7 +180,6 @@ const RecyclerViewComponent = <T,>(
         ? outerViewSize.width
         : outerViewSize.height;
       if (scrollDimensionSize <= 0) {
-        renderTimeTracker.markRenderComplete();
         return;
       }
 
@@ -214,6 +213,13 @@ const RecyclerViewComponent = <T,>(
    */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
+    // Skip item layout processing when the layout manager hasn't been
+    // initialized (e.g., zero dimensions in a background tab).  Without
+    // this, modifyChildrenLayout keeps returning true, causing an
+    // infinite re-render loop via setRenderId.
+    if (!containerViewSizeRef.current) {
+      return;
+    }
     if (pendingChildIds.size > 0) {
       return;
     }
