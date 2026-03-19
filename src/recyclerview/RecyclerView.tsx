@@ -180,6 +180,7 @@ const RecyclerViewComponent = <T,>(
         ? outerViewSize.width
         : outerViewSize.height;
       if (scrollDimensionSize <= 0) {
+        renderTimeTracker.markRenderComplete();
         return;
       }
 
