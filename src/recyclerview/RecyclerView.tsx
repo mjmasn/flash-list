@@ -171,15 +171,15 @@ const RecyclerViewComponent = <T,>(
         internalViewRef.current
       );
 
-      // Skip layout when scroll-direction dimension is zero.
+      // Skip layout when both dimensions are zero.
       // This happens when the list is rendered in a background tab/screen
       // (e.g., non-active React Navigation stack screens). Without this guard,
       // items get measured as zero-height, all stack at position 0, and the
       // draw distance buffer causes ALL items to be rendered.
-      const scrollDimensionSize = horizontal
-        ? outerViewSize.width
-        : outerViewSize.height;
-      if (scrollDimensionSize <= 0) {
+      // Note: we only block when BOTH are zero — a list in an auto-height
+      // modal may legitimately start with height=0 but non-zero width, and
+      // needs the initial render to measure items so the container can grow.
+      if (outerViewSize.width <= 0 && outerViewSize.height <= 0) {
         return;
       }
 
