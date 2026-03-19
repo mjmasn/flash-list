@@ -5,6 +5,34 @@ import { useFlashListContext } from "../recyclerview/RecyclerViewContextProvider
 import { LayoutCommitObserver } from "../recyclerview/LayoutCommitObserver";
 import { FlashList } from "..";
 
+// Mock measureLayout to return fixed dimensions (required so the layout
+// manager initialises — without this, zero dimensions trigger the
+// background-rendering guard and no items are rendered).
+jest.mock("../recyclerview/utils/measureLayout", () => {
+  const originalModule = jest.requireActual(
+    "../recyclerview/utils/measureLayout"
+  );
+  return {
+    ...originalModule,
+    measureParentSize: jest.fn().mockImplementation(() => ({
+      width: 399,
+      height: 899,
+    })),
+    measureFirstChildLayout: jest.fn().mockImplementation(() => ({
+      x: 0,
+      y: 0,
+      width: 399,
+      height: 899,
+    })),
+    measureItemLayout: jest.fn().mockImplementation(() => ({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 100,
+    })),
+  };
+});
+
 describe("LayoutCommitObserver", () => {
   it("should not alter ref captured by child", () => {
     const ChildComponent = () => {

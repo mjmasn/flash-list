@@ -171,6 +171,18 @@ const RecyclerViewComponent = <T,>(
         internalViewRef.current
       );
 
+      // Skip layout when both dimensions are zero.
+      // This happens when the list is rendered in a background tab/screen
+      // (e.g., non-active React Navigation stack screens). Without this guard,
+      // items get measured as zero-height, all stack at position 0, and the
+      // draw distance buffer causes ALL items to be rendered.
+      // Note: we only block when BOTH are zero — a list in an auto-height
+      // modal may legitimately start with height=0 but non-zero width, and
+      // needs the initial render to measure items so the container can grow.
+      if (outerViewSize.width <= 0 && outerViewSize.height <= 0) {
+        return;
+      }
+
       containerViewSizeRef.current = outerViewSize;
 
       // firstChildViewLayout is already relative to the outer container,
@@ -201,6 +213,13 @@ const RecyclerViewComponent = <T,>(
    */
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useLayoutEffect(() => {
+    // Skip item layout processing when the layout manager hasn't been
+    // initialized (e.g., zero dimensions in a background tab).  Without
+    // this, modifyChildrenLayout keeps returning true, causing an
+    // infinite re-render loop via setRenderId.
+    if (!containerViewSizeRef.current) {
+      return;
+    }
     if (pendingChildIds.size > 0) {
       return;
     }
